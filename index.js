@@ -13,8 +13,8 @@ bot.on('message', async ({ chat: { id }, text }) => {
   }
 
   if (text === '/random') {
-    const { img, title, url } = await scraping(await getLatestNum());
-    sendThis(bot, id, img, title, url)
+    const { img, title, url, tags } = await scraping(await getLatestNum());
+    sendThis(bot, id, img, title, url, tags)
     return
   }
 
@@ -26,6 +26,6 @@ bot.on('message', async ({ chat: { id }, text }) => {
 
   const { img, title, url } = await scraping(text);
 
-  sendThis(bot, id, img, title, url)
+  sendThis(bot, id, img, title, url, tags)
 
 });

@@ -18,11 +18,14 @@ async function scraping (number) {
   const titleHtmlBefore = parse(data).querySelector('#info .title .before').toString().replace(reg, '')
   const titleHtmlPretty = parse(data).querySelector('#info .title .pretty').toString().replace(reg, '')
   const titleHtmlAfter = parse(data).querySelector('#info .title .after').toString().replace(reg, '')
-
+  let tags = parse(data)
+    .querySelectorAll("#tags > div:nth-child(3) > .tags .name")
+    .map(tag => tag.rawText)
   return {
     img: imgUrl,
     title: `${titleHtmlBefore} ${titleHtmlPretty} ${titleHtmlAfter}`,
-    url
+    url,
+    tags
   };
 }
 
@@ -35,7 +38,6 @@ async function getLatestNum () {
     .split(start)
     .pop();
   const num = randomInteger(0, Number(temp.slice(0, temp.indexOf('/"'))))
-  console.log(num);
   return num
 }
 
@@ -44,9 +46,10 @@ function randomInteger(min, max) {
   return Math.floor(rand);
 }
 
-function sendThis(bot,id, img, title, url ){
+function sendThis(bot, id, img, title, url, tags ){
   bot.sendPhoto(id, img, {
-    caption: `${title}`,
+    parse_mode : 'markdown',
+    caption: `${title}.\n\n*Tags: * ${tags}`,
     reply_markup: {
       inline_keyboard: [
         [
