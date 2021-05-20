@@ -7,7 +7,7 @@ const bot = new TelegramBot(process.env.TOKEN, { polling: true });
 
 bot.on('message', async ({ chat: { id }, text }) => {
 
-  if(text === '/help') {
+  if (text === '/help' || text === '/start') {
     bot.sendMessage(id, 'Just send me the "numbers" and I\'ll give you a link and a preview ❤️')
     return
   }
