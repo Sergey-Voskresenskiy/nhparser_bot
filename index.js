@@ -5,45 +5,46 @@ import { scraping, sendThis, getLatestNum } from './lib.js'
 
 const bot = new TelegramBot(process.env.TOKEN, { polling: true });
 
-const reg = new RegExp('^(?:https?:\/\/)?nhentai.net\/g')
+const linkRegex = new RegExp('^(?:https?://)?nhentai.net/g/(\\d+)(?:/|$)')
 
-bot.onText(reg, async ({ chat: { id } }, { input }) => {
-  const { img, title, url, tags } = await scraping(input.match(/\d+/g).toString());
-  sendThis(bot, id, img, title, url, tags)
-  return 
-})
+async function sendPreview(chatId, doujinId) {
+  const { img, title, url, tags } = await scraping(doujinId);
+  sendThis(bot, chatId, img, title, url, tags)
+}
 
-bot.onText(/\/random/, async ({ chat: { id } }) => {
-  const { img, title, url, tags } = await scraping(await getLatestNum());
-  sendThis(bot, id, img, title, url, tags)
-  return
-})
+bot.on('message', async ({ chat: { id }, text }) => {
+  try {
+    if (text === '/help' || text === '/start') {
+      bot.sendMessage(id, 'Just send me the "numbers/link" and I\'ll give you a link and a preview ❤️')
+      return
+    }
 
+    if (text === '/random') {
+      await sendPreview(id, await getLatestNum())
+      return
+    }
 
-bot.on('message', async ({ chat: { id }, text, message_id: userMessage }) => {
-  if (/\/random/.test(text)) return
-  if (reg.test(text)) return
+    let linkMatch = linkRegex.exec(text)
 
-  if (text === '/help' || text === '/start') {
-    bot.sendMessage(id, 'Just send me the "numbers/link" and I\'ll give you a link and a preview ❤️')
-    return
+    if (linkMatch) {
+      await sendPreview(id, linkMatch[1])
+      return
+    } 
+
+    if (/^\d+$/.test(text)) {
+      await sendPreview(id, text)
+      return
+    } 
+
+    bot.sendSticker(id, './sticker.webp')
+    bot.sendMessage(id, 'Send the numbers, please 😠')
   }
-
-  if (!/^\d+$/.test(text)) {
-    const { message_id: stickerMessage } = await bot.sendSticker(id, './sticker.webp')
-    const { message_id: textMessage } = await bot.sendMessage(id, 'Send *"numbers"*, please, or *"link"*,\n\nBtw this is "Wrong message", I am deleting!\n🔪', { parse_mode: 'Markdown'})
-
-    const errorTimeout = setTimeout(() =>{
-      bot.deleteMessage(id, stickerMessage);
-      bot.deleteMessage(id, textMessage);
-      bot.deleteMessage(id, userMessage);
-      clearTimeout(errorTimeout);
-    },6000)
-
-    return
-  } 
-
-  const { img, title, url, tags } = await scraping(text);
-
-  sendThis(bot, id, img, title, url, tags)
+  catch (e) {
+    console.log('error while processing:', e)
+    try {
+      bot.sendMessage(id, 'Error occurred during processing')
+    } catch (e2) {
+      console.log('error in try:', e2)
+    }
+  }
 });
