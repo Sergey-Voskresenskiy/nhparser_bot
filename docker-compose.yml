@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  bot:
+    image: nhparser-bot
+    build: ./
+    env_file:
+      - .env
+
