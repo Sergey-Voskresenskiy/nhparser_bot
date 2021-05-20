@@ -5,10 +5,18 @@ import { scraping, sendThis, getLatestNum } from './lib.js'
 
 const bot = new TelegramBot(process.env.TOKEN, { polling: true });
 
+const reg = new RegExp('^(?:https?:\/\/)?nhentai.net\/g')
+
+bot.onText(reg, async ({ chat: { id } }, { input }) => {
+  const { img, title, url, tags } = await scraping(input.match(/\d+/g).toString());
+  sendThis(bot, id, img, title, url, tags)
+  return 
+})
+
 bot.on('message', async ({ chat: { id }, text }) => {
 
   if (text === '/help' || text === '/start') {
-    bot.sendMessage(id, 'Just send me the "numbers" and I\'ll give you a link and a preview ❤️')
+    bot.sendMessage(id, 'Just send me the "numbers/link" and I\'ll give you a link and a preview ❤️')
     return
   }
 
@@ -17,6 +25,8 @@ bot.on('message', async ({ chat: { id }, text }) => {
     sendThis(bot, id, img, title, url, tags)
     return
   }
+
+  if (reg.test(text)) return
 
   if (!/^\d+$/.test(text)) {
     bot.sendSticker(id, './sticker.webp')
@@ -27,5 +37,4 @@ bot.on('message', async ({ chat: { id }, text }) => {
   const { img, title, url, tags } = await scraping(text);
 
   sendThis(bot, id, img, title, url, tags)
-
 });
