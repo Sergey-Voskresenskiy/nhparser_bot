@@ -24,7 +24,7 @@ bot.on('message', async ({ chat: { id }, text }) => {
     return
   } 
 
-  const { img, title, url } = await scraping(text);
+  const { img, title, url, tags } = await scraping(text);
 
   sendThis(bot, id, img, title, url, tags)
 
