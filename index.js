@@ -13,24 +13,33 @@ bot.onText(reg, async ({ chat: { id } }, { input }) => {
   return 
 })
 
-bot.on('message', async ({ chat: { id }, text }) => {
+bot.onText(/\/random/, async ({ chat: { id } }) => {
+  const { img, title, url, tags } = await scraping(await getLatestNum());
+  sendThis(bot, id, img, title, url, tags)
+  return
+})
+
+
+bot.on('message', async ({ chat: { id }, text, message_id: userMessage }) => {
+  if (/\/random/.test(text)) return
+  if (reg.test(text)) return
 
   if (text === '/help' || text === '/start') {
     bot.sendMessage(id, 'Just send me the "numbers/link" and I\'ll give you a link and a preview ❤️')
     return
   }
 
-  if (text === '/random') {
-    const { img, title, url, tags } = await scraping(await getLatestNum());
-    sendThis(bot, id, img, title, url, tags)
-    return
-  }
-
-  if (reg.test(text)) return
-
   if (!/^\d+$/.test(text)) {
-    bot.sendSticker(id, './sticker.webp')
-    bot.sendMessage(id, 'Send the numbers, please 😠')
+    const { message_id: stickerMessage } = await bot.sendSticker(id, './sticker.webp')
+    const { message_id: textMessage } = await bot.sendMessage(id, 'Send *"numbers"*, please, or *"link"*,\n\nBtw this is "Wrong message", I am deleting!\n🔪', { parse_mode: 'Markdown'})
+
+    const errorTimeout = setTimeout(() =>{
+      bot.deleteMessage(id, stickerMessage);
+      bot.deleteMessage(id, textMessage);
+      bot.deleteMessage(id, userMessage);
+      clearTimeout(errorTimeout);
+    },6000)
+
     return
   } 
 

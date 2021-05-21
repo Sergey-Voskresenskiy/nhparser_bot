@@ -46,21 +46,27 @@ function randomInteger(min, max) {
   return Math.floor(rand);
 }
 
-function sendThis(bot, id, img, title, url, tags ){
-  bot.sendPhoto(id, img, {
-    parse_mode : 'markdown',
-    caption: `${title}.\n\n*Tags: * ${tags}`,
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: 'Open on site',
-            url
-          },
+async function sendThis(bot, id, img, title, url, tags ){
+  const { message_id } = await bot.sendMessage(id, '💖 *Please wait!* 💖', { parse_mode: 'Markdown' })
+  
+  const waitTimeout = setTimeout(async () => {
+    const { from: { id: done } } = await bot.sendPhoto(id, img, {
+      parse_mode: 'markdown',
+      caption: `${title}.\n\n*Tags: * ${tags}`,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: 'Open on site',
+              url
+            },
+          ]
         ]
-      ]
-    }
-  });
+      }
+    });
+    if (done) bot.deleteMessage(id, message_id)
+    clearTimeout(waitTimeout)
+  }, 3000)
 }
 
 export {
