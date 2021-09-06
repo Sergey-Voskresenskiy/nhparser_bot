@@ -1,9 +1,10 @@
 {
   "name": "nhparser_bot",
   "version": "1.0.0",
-  "main": "index.js",
   "author": "SheenV",
   "license": "MIT",
+  "main": "index.js",
+  "type": "module",
   "scripts": {
     "build": "babel index.js -d dist --presets es2015 && babel lib.js -d dist --presets es2015",
     "start": "yarn build && nodemon dist/index.js"
@@ -11,8 +12,10 @@
   "dependencies": {
     "axios": "^0.21.1",
     "dotenv": "^9.0.2",
+    "nhentai": "^3.0.0",
     "node-html-parser": "^3.3.0",
-    "node-telegram-bot-api": "^0.53.0"
+    "node-telegram-bot-api": "^0.53.0",
+    "telegra.ph": "^1.0.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

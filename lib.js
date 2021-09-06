@@ -1,77 +1,138 @@
-const axios = require('axios');
-import { parse } from 'node-html-parser';
+import axios from 'axios';
+import pkg from 'node-html-parser';
+import Telegraph from 'telegra.ph'
 
-async function scraping (number) {
-  const startImg = /data-src="/
-  const reg = /(\<(\/?[^>]+)>)/g
+const telegraph = new Telegraph("")
+const {parse} = pkg;
+import nhentai from 'nhentai';
 
-  const url = `${process.env.URL_DEFAULT}${number}`
-  const { data } = await axios.get(url)
+const API_Nhentai = new nhentai.API();
 
-  const imgHTML = parse(data)
-    .querySelector('#cover a img')
-    .toString()
-    .split(startImg)
-    .pop();
+function cacheAnswers(fn, cacheTime = 1000 * 60 * 5) {
+    const memoCache = new Map();
+    return (...args) => {
+        const memoKey = JSON.stringify(args);
+        if (memoCache.has(memoKey)) {
+            const entryDate = memoCache.get(memoKey)?.time;
+            const diff = Date.now() - entryDate?.getTime();
+            if (diff <= cacheTime) return memoCache.get(memoKey)?.result;
+        }
+        const res = fn(...args);
+        if (res instanceof Promise) {
+            return res.then(r => {
+                memoCache.set(memoKey, {time: new Date(), result: r});
+                return res;
+            });
+        } else {
+            memoCache.set(memoKey, {time: new Date(), result: res});
+            return res;
+        }
+    };
+}
+const getCachedAxios = cacheAnswers(async (url) => await axios.get(url))
 
-  const imgUrl = imgHTML.slice(0, imgHTML.indexOf('\"'))
-  const titleHtmlBefore = parse(data).querySelector('#info .title .before').toString().replace(reg, '')
-  const titleHtmlPretty = parse(data).querySelector('#info .title .pretty').toString().replace(reg, '')
-  const titleHtmlAfter = parse(data).querySelector('#info .title .after').toString().replace(reg, '')
-  let tags = parse(data)
-    .querySelectorAll("#tags > div:nth-child(3) > .tags .name")
-    .map(tag => tag.rawText)
-  return {
-    img: imgUrl,
-    title: `${titleHtmlBefore} ${titleHtmlPretty} ${titleHtmlAfter}`,
-    url,
-    tags
-  };
+let Author = null
+async function _initTelegraPh() {
+    // TODO: create only one account :D
+    const {access_token, auth_url} = await telegraph.createAccount("showNH")
+    telegraph.token = access_token
+    Author = auth_url
 }
 
-async function getLatestNum () {
-  const start = '<a href="/g/'
-  const { data } = await axios.get(`${process.env.URL_MAIN}`)
-  const temp = parse(data)
-    .querySelector('#content .gallery .cover')
-    .toString()
-    .split(start)
-    .pop();
-  const num = randomInteger(0, Number(temp.slice(0, temp.indexOf('/"'))))
-  return num
+await _initTelegraPh()
+
+const scraping = cacheAnswers(async (number) => {
+    const {
+        cover: {url: coverImage},
+        thumbnail: {url: thumbnailImage},
+        titles,
+        pages,
+        url,
+        tags
+    } = await API_Nhentai.fetchDoujin(number)
+
+    return {
+        img: coverImage ? coverImage : thumbnailImage,
+        title: titles,
+        url,
+        tags: tags.all.map(tag => tag.name).join(', '),
+        images: pages.map(p => p.url)
+    }
+})
+
+async function getLatestNum() {
+    const start = '<a href="/g/'
+    const { data } = await getCachedAxios(`${process.env.URL_MAIN}`)
+    const temp = parse(data)
+        .querySelector('#content .gallery .cover')
+        .toString()
+        .split(start)
+        .pop();
+    return randomInteger(0, Number(temp.slice(0, temp.indexOf('/"'))))
 }
 
 function randomInteger(min, max) {
-  let rand = min + Math.random() * (max + 1 - min);
-  return Math.floor(rand);
+    let rand = min + Math.random() * (max + 1 - min);
+    return Math.floor(rand);
 }
 
-async function sendThis(bot, id, img, title, url, tags ){
-  const { message_id } = await bot.sendMessage(id, '💖 *Please wait!* 💖', { parse_mode: 'Markdown' })
-  
-  const waitTimeout = setTimeout(async () => {
-    const { from: { id: done } } = await bot.sendPhoto(id, img, {
-      parse_mode: 'markdown',
-      caption: `${title}.\n\n*Tags: * ${tags}`,
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: 'Open on site',
-              url
+async function sendThis(bot, id, img, title, url, tags, images) {
+    const content = [
+        {
+            tag: 'a',
+            'attrs': {
+                'href': url
             },
-          ]
-        ]
-      }
+            children: [`Eng:\n${title.english}\nJapanese:\n${title.japanese}.\n\n`]
+        },
+        {
+            tag: 'hr',
+        },
+        {
+            tag: 'i',
+            children: [`Tags: ${tags}`]
+        },
+        {
+            tag: 'hr',
+        },
+    ]
+    images.forEach(img => {
+        content.push({
+            tag: 'img',
+            'attrs': {
+                'src': img
+            },
+        })
+    })
+    const {url: telegraUrl} = await telegraph.createPage(title.pretty, content, 'showNH', Author, false)
+
+    console.log(title)
+    const {from: {id: done}} = await bot.sendPhoto(id, img, {
+        parse_mode: 'markdown',
+        caption: `*Eng:*\n${title.english}\n\n*Japanese:*\n${title.japanese}.\n\n*Tags:*\n${tags}`,
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    {
+                        text: 'Open on site',
+                        url
+                    },
+                ],
+                [
+                    {
+                        text: 'Open on telegra.ph',
+                        url: telegraUrl
+                    }
+                ]
+            ]
+        }
     });
-    if (done) bot.deleteMessage(id, message_id)
-    clearTimeout(waitTimeout)
-  }, 3000)
+    return {done}
 }
 
 export {
-  scraping,
-  randomInteger,
-  sendThis,
-  getLatestNum
+    scraping,
+    randomInteger,
+    sendThis,
+    getLatestNum
 }
