@@ -29,9 +29,11 @@ function cacheAnswers(fn, cacheTime = 1000 * 60 * 5) {
         }
     };
 }
+
 const getCachedAxios = cacheAnswers(async (url) => await axios.get(url))
 
 let Author = null
+
 async function _initTelegraPh() {
     // TODO: create only one account :D
     const {access_token, auth_url} = await telegraph.createAccount("showNH")
@@ -48,21 +50,54 @@ const scraping = cacheAnswers(async (number) => {
         titles,
         pages,
         url,
-        tags
+        tags,
+        id
     } = await API_Nhentai.fetchDoujin(number)
 
+    const images = pages.map(p => p.url)
+    const content = [
+        {
+            tag: 'a',
+            'attrs': {
+                'href': url
+            },
+            children: [`Eng:\n${titles.english}\nJapanese:\n${titles.japanese}.\n\n`]
+        },
+        {
+            tag: 'hr',
+        },
+        {
+            tag: 'i',
+            children: [`Tags: ${tags}`]
+        },
+        {
+            tag: 'hr',
+        },
+    ]
+
+    images.forEach(img => {
+        content.push({
+            tag: 'img',
+            'attrs': {
+                'src': img
+            },
+        })
+    })
+    const {url: telegraphUrl} = await telegraph.createPage(titles.pretty, content, 'showNH', Author, false)
     return {
+        id,
         img: coverImage ? coverImage : thumbnailImage,
         title: titles,
         url,
         tags: tags.all.map(tag => tag.name).join(', '),
-        images: pages.map(p => p.url)
+        images,
+        telegraphUrl
     }
 })
 
 async function getLatestNum() {
     const start = '<a href="/g/'
-    const { data } = await getCachedAxios(`${process.env.URL_MAIN}`)
+    const {data} = await getCachedAxios(`${process.env.URL_MAIN}`)
     const temp = parse(data)
         .querySelector('#content .gallery .cover')
         .toString()
@@ -76,37 +111,7 @@ function randomInteger(min, max) {
     return Math.floor(rand);
 }
 
-async function sendThis(bot, id, img, title, url, tags, images) {
-    const content = [
-        {
-            tag: 'a',
-            'attrs': {
-                'href': url
-            },
-            children: [`Eng:\n${title.english}\nJapanese:\n${title.japanese}.\n\n`]
-        },
-        {
-            tag: 'hr',
-        },
-        {
-            tag: 'i',
-            children: [`Tags: ${tags}`]
-        },
-        {
-            tag: 'hr',
-        },
-    ]
-    images.forEach(img => {
-        content.push({
-            tag: 'img',
-            'attrs': {
-                'src': img
-            },
-        })
-    })
-    const {url: telegraUrl} = await telegraph.createPage(title.pretty, content, 'showNH', Author, false)
-
-    console.log(title)
+async function sendThis(bot, id, img, title, url, tags, telegraphUrl) {
     const {from: {id: done}} = await bot.sendPhoto(id, img, {
         parse_mode: 'markdown',
         caption: `*Eng:*\n${title.english}\n\n*Japanese:*\n${title.japanese}.\n\n*Tags:*\n${tags}`,
@@ -121,7 +126,7 @@ async function sendThis(bot, id, img, title, url, tags, images) {
                 [
                     {
                         text: 'Open on telegra.ph',
-                        url: telegraUrl
+                        url: String(telegraphUrl)
                     }
                 ]
             ]
@@ -130,8 +135,39 @@ async function sendThis(bot, id, img, title, url, tags, images) {
     return {done}
 }
 
+async function getContentToInlineQuery(id, img, title, url, tags, telegraphUrl) {
+    return [
+        {
+            id: id.toString(),
+            type: 'photo',
+            title: title.pretty,
+            parse_mode: 'markdown',
+            caption: `*Eng:*\n${title.english}\n\n*Japanese:*\n${title.japanese}.\n\n*Tags:*\n${tags}`,
+            photo_url: img,
+            thumb_url: img,
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        {
+                            text: 'Open on site',
+                            url
+                        },
+                    ],
+                    [
+                        {
+                            text: 'Open on telegra.ph',
+                            url: telegraphUrl
+                        }
+                    ]
+                ]
+            }
+
+        }]
+}
+
 export {
     scraping,
+    getContentToInlineQuery,
     randomInteger,
     sendThis,
     getLatestNum
