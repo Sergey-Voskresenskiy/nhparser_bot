@@ -93,7 +93,25 @@ bot.on('chosen_inline_result', async ({inline_message_id, result_id}) => {
                 images: scrapingData.images
             })})\n[Read in site](${process.env.URL_DEFAULT}/${result_id})`,
         }, {inline_message_id})
-
+        // await bot.editMessageCaption({
+        //     reply_markup: {
+        //         inline_keyboard: [
+        //             [
+        //                 {
+        //                     text: 'Open on site',
+        //                     url: ${process.env.URL_DEFAULT}/${result_id}
+        //                 },
+        //             ],
+        //             [
+        //                 {
+        //                     text: 'Open on telegra.ph',
+        //                     url: await postOnTelegraPh({url: ${process.env.URL_DEFAULT}/${result_id}, tags: scrapingData.tags, titles: scrapingData.title, images: scrapingData.images})
+        //                 }
+        //             ]
+        //         ]
+        //     }
+        // }, {inline_message_id})
+        content = []
     } catch (e) {
         console.log(e.message)
     }
