@@ -1,11 +1,15 @@
+import path from 'path';
+import dotenv from "dotenv"
+dotenv.config({path: path.join('./', '.env')})
+
 import axios from 'axios';
 import pkg from 'node-html-parser';
-import Telegraph from 'telegra.ph'
-
-const telegraph = new Telegraph("")
 const {parse} = pkg;
-import nhentai from 'nhentai';
 
+import Telegraph from 'telegra.ph'
+const telegraph = new Telegraph(process.env.ACCESS_TOKEN)
+
+import nhentai from 'nhentai';
 const API_Nhentai = new nhentai.API();
 
 function cacheAnswers(fn, cacheTime = 1000 * 60 * 5) {
@@ -32,29 +36,7 @@ function cacheAnswers(fn, cacheTime = 1000 * 60 * 5) {
 
 const getCachedAxios = cacheAnswers(async (url) => await axios.get(url))
 
-let Author = null
-
-async function _initTelegraPh() {
-    // TODO: create only one account :D
-    const {access_token, auth_url} = await telegraph.createAccount("showNH")
-    telegraph.token = access_token
-    Author = auth_url
-}
-
-await _initTelegraPh()
-
-const scraping = cacheAnswers(async (number) => {
-    const {
-        cover: {url: coverImage},
-        thumbnail: {url: thumbnailImage},
-        titles,
-        pages,
-        url,
-        tags,
-        id
-    } = await API_Nhentai.fetchDoujin(number)
-
-    const images = pages.map(p => p.url)
+const postOnTelegraPh = cacheAnswers(async ({ url, tags, titles, images}) => {
     const content = [
         {
             tag: 'a',
@@ -83,15 +65,28 @@ const scraping = cacheAnswers(async (number) => {
             },
         })
     })
-    const {url: telegraphUrl} = await telegraph.createPage(titles.pretty, content, 'showNH', Author, false)
+
+    const { url: telegraphUrl } = await telegraph.createPage(titles.pretty, content, 'showNH', process.env.AUTHOR_URL, false)
+    return telegraphUrl;
+})
+
+const scraping = cacheAnswers(async (number) => {
+    const {
+        cover: {url: coverImage},
+        thumbnail: {url: thumbnailImage},
+        titles,
+        pages,
+        url,
+        tags,
+        id
+    } = await API_Nhentai.fetchDoujin(number)
     return {
         id,
         img: coverImage ? coverImage : thumbnailImage,
         title: titles,
         url,
         tags: tags.all.map(tag => tag.name).join(', '),
-        images,
-        telegraphUrl
+        images: pages.map(p => p.url)
     }
 })
 
@@ -135,39 +130,9 @@ async function sendThis(bot, id, img, title, url, tags, telegraphUrl) {
     return {done}
 }
 
-async function getContentToInlineQuery(id, img, title, url, tags, telegraphUrl) {
-    return [
-        {
-            id: id.toString(),
-            type: 'photo',
-            title: title.pretty,
-            parse_mode: 'markdown',
-            caption: `*Eng:*\n${title.english}\n\n*Japanese:*\n${title.japanese}.\n\n*Tags:*\n${tags}`,
-            photo_url: img,
-            thumb_url: img,
-            reply_markup: {
-                inline_keyboard: [
-                    [
-                        {
-                            text: 'Open on site',
-                            url
-                        },
-                    ],
-                    [
-                        {
-                            text: 'Open on telegra.ph',
-                            url: telegraphUrl
-                        }
-                    ]
-                ]
-            }
-
-        }]
-}
-
 export {
     scraping,
-    getContentToInlineQuery,
+    postOnTelegraPh,
     randomInteger,
     sendThis,
     getLatestNum

@@ -4,7 +4,7 @@ import dotenv from "dotenv"
 dotenv.config({path: path.join('./', '.env')})
 import TelegramBot from 'node-telegram-bot-api'
 
-import {scraping, sendThis, getLatestNum, getContentToInlineQuery} from './lib.js'
+import {scraping, sendThis, getLatestNum, postOnTelegraPh} from './lib.js'
 
 const bot = new TelegramBot(process.env.TOKEN, {polling: true});
 
@@ -13,33 +13,91 @@ const linkMatch = (text) => linkRegex.exec(text)
 
 async function sendPreview(chatId, doujinId) {
     const {message_id} = await bot.sendMessage(chatId, '💖 *Please wait!* 💖', {parse_mode: 'Markdown'})
-    const {img, title, url, tags, images, telegraphUrl} = await scraping(doujinId);
-    const {done} = await sendThis(bot, chatId, img, title, url, tags, images, telegraphUrl)
+    const {img, title, url, tags, images} = await scraping(doujinId);
+    const {done} = await sendThis(bot, chatId, img, title, url, tags, await postOnTelegraPh({
+        url,
+        tags,
+        titles: title,
+        images
+    }))
     if (done) await bot.deleteMessage(chatId, message_id)
 }
 
-bot.on('inline_query', async (query) => {
-    let content = []
-    if (query.query && query.query !== '') {
-        if (query.query === 'random') {
-            const {id, img, title, url, tags, telegraphUrl} = await scraping(await getLatestNum());
-            content = await getContentToInlineQuery(id, img, title, url, tags, telegraphUrl)
+let scrapingData = null
+let content = []
+const createContent = ({id, title, url, img, tags}) => {
+    return content.push({
+        id: id.toString(),
+        type: 'photo',
+        title: title.pretty,
+        photo_url: img,
+        thumb_url: img,
+        description: tags,
+        parse_mode: 'markdown',
+        caption: `*#${id}*\n*Eng:*\n${title.english}\n*Japanese:*\n${title.japanese}.\n\n*Tags:*\n${tags}`,
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    {
+                        text: '💖',
+                        url
+                    },
+                ],
+            ]
         }
-        if (/^\d+$/.test(query.query)) {
-            const {id, img, title, url, tags, telegraphUrl} = await scraping(query.query);
-            content = await getContentToInlineQuery(id, img, title, url, tags, telegraphUrl)
-        }
-        if (linkMatch(query.query)) {
-            const {id, img, title, url, tags, telegraphUrl} = await scraping(linkMatch(query.query)[1]);
-            content = await getContentToInlineQuery(id, img, title, url, tags, telegraphUrl)
-        }
+    })
+}
 
-        await bot.answerInlineQuery(query.id, content, {
-            cache_time: 0,
-        })
+bot.on('inline_query', async (query) => {
+    if (query.query && query.query !== '') {
+        try {
+            if (query.query === 'random') {
+                const {id, img, title, url, tags, images} = await scraping(await getLatestNum());
+                createContent({id, title, url, img, tags})
+                scrapingData = {id, img, title, url, tags, images}
+            }
+            if (/^\d+$/.test(query.query)) {
+                const {id, img, title, url, tags, images} = await scraping(query.query);
+                createContent({id, title, url, img, tags})
+                scrapingData = {id, img, title, url, tags, images}
+            }
+            if (linkMatch(query.query)) {
+                const {id, img, title, url, tags, images} = await scraping(linkMatch(query.query)[1]);
+                createContent({id, title, url, img, tags})
+                scrapingData = {id, img, title, url, tags, images}
+            }
+
+            await bot.answerInlineQuery(query.id, content, {
+                cache_time: 0,
+            })
+        } catch (e) {
+            console.log(e.message);
+        }
     }
 });
 
+bot.on('chosen_inline_result', async ({inline_message_id, result_id}) => {
+    try {
+        await bot.editMessageMedia({
+            type: 'photo',
+            media: scrapingData.img,
+            title: scrapingData.title.pretty,
+            photo_url: scrapingData.img,
+            thumb_url: scrapingData.img,
+            description: scrapingData.tags,
+            parse_mode: 'markdown',
+            caption: `*#${result_id}*\n*Eng:*\n${scrapingData.title.english}\n*Japanese:*\n${scrapingData.title.japanese}.\n\n*Tags:*\n${scrapingData.tags}\n[Read in telegraph](${await postOnTelegraPh({
+                url: `${process.env.URL_DEFAULT}/${result_id}`,
+                tags: scrapingData.tags,
+                titles: scrapingData.title,
+                images: scrapingData.images
+            })})\n[Read in site](${process.env.URL_DEFAULT}/${result_id})`,
+        }, {inline_message_id})
+
+    } catch (e) {
+        console.log(e.message)
+    }
+})
 
 bot.on('message', async ({chat: {id}, text}) => {
     try {
@@ -47,17 +105,14 @@ bot.on('message', async ({chat: {id}, text}) => {
             await bot.sendMessage(id, 'Just send me the "numbers/link" and I\'ll give you a link and a preview ❤️')
             return
         }
-
         if (text === '/random') {
             await sendPreview(id, await getLatestNum())
             return
         }
-
-        if (linkMatch) {
+        if (linkMatch(text)) {
             await sendPreview(id, linkMatch(text)[1])
             return
         }
-
         if (/^\d+$/.test(text)) {
             await sendPreview(id, text)
             return
