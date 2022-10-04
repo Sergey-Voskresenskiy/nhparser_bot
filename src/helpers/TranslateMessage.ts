@@ -2,15 +2,15 @@ const { Markup } = require("telegraf");
 import { DICTIONARY, DEFAULT_LANG } from "../const";
 
 export class TranslateMessage {
-  private lang;
-  private dictum;
+  private lang: string;
+  private dictum: string;
   private dictionary = DICTIONARY;
 
-  constructor(lang = DEFAULT_LANG) {
+  constructor(lang: string = DEFAULT_LANG) {
     this.setLang(lang);
   }
 
-  message(dictum, lang = this.lang): string {
+  message(dictum: string, lang: string = this.lang): string {
     if (!dictum) throw new Error("Cannot get dictum");
     if (lang !== this.lang) this.setLang(lang);
 
@@ -19,15 +19,15 @@ export class TranslateMessage {
     return this.dictionary[this.dictum][this.lang];
   }
 
-  setLang(lang) {
+  setLang(lang: string): void {
     this.lang = lang;
   }
 
-  setDictum(dictum) {
+  setDictum(dictum: string): void {
     this.dictum = dictum;
   }
 
-  reply_markup() {
+  reply_markup(): void {
     let buttons = [];
 
     switch (this.dictum) {

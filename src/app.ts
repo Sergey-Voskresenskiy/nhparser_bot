@@ -6,15 +6,19 @@ const { Telegraf } = require("telegraf");
 
 import { SUBSTRING_COUNT } from "./const";
 import { TranslateMessage } from "./helpers/TranslateMessage";
-import { linkMatch } from "./helpers/common";
+import { linkMatch, removeActionMessage } from "./helpers/common";
 
 const bot = new Telegraf(process.env.TOKEN);
 
 const t = new TranslateMessage();
 
-bot.start((ctx) =>
+let actionMessageId: number | null = null;
+
+bot.start((ctx) => {
+  actionMessageId = ctx.update.message.message_id;
+
   ctx.reply(t.message("hello"), t.reply_markup(), { parse_mode: "HTML" })
-);
+});
 bot.help((ctx) =>
   ctx.reply(t.message("hello"), t.reply_markup(), { parse_mode: "HTML" })
 );
@@ -58,9 +62,7 @@ bot.action(/setLang_+/, (ctx) => {
     { parse_mode: "HTML" }
   );
 
-  setTimeout(() => {
-    ctx.deleteMessage(messageId);
-  }, 2000);
+  removeActionMessage(ctx, messageId, actionMessageId)
 });
 
 bot.launch();
