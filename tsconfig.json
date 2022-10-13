@@ -19,5 +19,8 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
   },
+  "ts-node": {
+    "files": true
+  },
   "include": ["src/**/*"]
 }
