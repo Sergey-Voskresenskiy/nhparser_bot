@@ -4,7 +4,7 @@ import { DICTIONARY, DEFAULT_LANG } from "../const";
 export class Message {
   lang: string;
   dictum: string;
-  dictionary = DICTIONARY;
+  dictionary = { ...DICTIONARY };
 
   constructor(lang: string = DEFAULT_LANG) {
     this.setLang(lang);

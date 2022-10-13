@@ -49,12 +49,14 @@ export class TranslateMessage extends Message {
           Markup.button.callback("Urk", `setLang_ua`),
           Markup.button.callback("Rus", `setLang_ru`),
         ];
+        break;
+      default:
+        break;
     }
 
     return {
-      caption: this.dictum,
       parse_mode: "HTML",
-      ...Markup.inlineKeyboard([...buttons]),
+      ...Markup.inlineKeyboard([...buttons]).resize(),
     };
   }
 }
