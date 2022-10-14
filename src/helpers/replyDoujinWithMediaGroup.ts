@@ -6,14 +6,9 @@ import { DoujinMessage } from "./DoujinMessage";
 const dm = new DoujinMessage();
 
 const replyDoujinWithMediaGroup = async (doujin, ctx) => {
-
-
-  console.log({ctx})
-
   const { message_id: waitMessage } = await ctx.reply(dm.waitMessage(ctx.session.__scenes.state.lang));
   
   if (doujin) {
-    ctx.state.lastDoujin = doujin.id
     await ctx.replyWithMediaGroup([
       {
         type: "photo",
@@ -22,7 +17,6 @@ const replyDoujinWithMediaGroup = async (doujin, ctx) => {
       ...(replyPhotoCounts.map((num) => ({
         type: "photo",
         media: doujin.images.pages[num],
-        caption: `Page №:${num}`,
       })) as InputMediaPhoto[]),
     ]);
 
@@ -31,7 +25,14 @@ const replyDoujinWithMediaGroup = async (doujin, ctx) => {
       dm.replyMarkup()
     );
   
-    await ctx.deleteMessage(ctx.update.message.message_id);
+    if(ctx.update?.message?.message_id) {
+      await ctx.deleteMessage(ctx.update?.message?.message_id);
+    }
+
+    if(ctx.update?.callback_query?.message?.message_id) {
+      await ctx.deleteMessage(ctx.update.callback_query.message.message_id)
+    }
+
     await ctx.deleteMessage(waitMessage);
   }
 

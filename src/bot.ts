@@ -13,6 +13,10 @@ const setupBot = () => {
     ctx.scene.enter('mainScene');
   });
 
+  bot.on("message", async (ctx) => {
+    ctx.scene.enter('mainScene');
+  })
+
   return bot
 }
 

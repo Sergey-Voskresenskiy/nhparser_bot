@@ -7,11 +7,15 @@ import { SUBSTRING_COUNT } from "../const";
 const tm = new TranslateMessage();
 
 const changeLang = async ctx => {
-  if(typeof ctx.update.message !== 'object') {
-    await ctx.editMessageText(tm.message("setLang"), tm.replyMarkup())
-  } else {
-    await ctx.reply(tm.message("setLang"), tm.replyMarkup())
+  if(ctx.update?.message?.message_id) {
+    await ctx.deleteMessage(ctx.update?.message?.message_id);
   }
+  
+  if(ctx.update?.callback_query?.message?.message_id) {
+    await ctx.deleteMessage(ctx.update.callback_query.message.message_id)
+  }
+
+  await ctx.reply(tm.message("setLang"), tm.replyMarkup())
 }
 
 const setLang = async ctx => {

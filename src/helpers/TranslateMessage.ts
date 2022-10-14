@@ -45,9 +45,9 @@ export class TranslateMessage extends Message {
         break;
       case "setLang":
         buttons = [
-          Markup.button.callback("Eng", `setLang_en`),
-          Markup.button.callback("Urk", `setLang_ua`),
-          Markup.button.callback("Rus", `setLang_ru`),
+          Markup.button.callback("🇬🇧", `setLang_en`),
+          Markup.button.callback("🇺🇦", `setLang_ua`),
+          Markup.button.callback("🇷🇺", `setLang_ru`),
         ];
         break;
       default:

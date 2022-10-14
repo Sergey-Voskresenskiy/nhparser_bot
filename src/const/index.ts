@@ -5,7 +5,8 @@ const DEFAULT_LANG = 'ua'
 const SUBSTRING_COUNT = {
   setLang: 8
 }
-const LINK_REGEX = new RegExp("^(?:https?://)?nhentai.net/g/(\\d+)(?:/|$)");
+
+const LINK_REGEX = new RegExp("^(?:https?://)?nhentai.to/g/(\\d+)(?:/|$)");
 
 export {
   DICTIONARY,
