@@ -1,13 +1,9 @@
 import { InputMediaPhoto } from "telegraf/typings/core/types/typegram";
 
 import { replyPhotoCounts } from "./common";
-import { DoujinMessage } from "./DoujinMessage";
-
-const dm = new DoujinMessage();
 
 const replyDoujinWithMediaGroup = async (doujin, ctx) => {
-  const { message_id: waitMessage } = await ctx.reply(dm.waitMessage(ctx.session.__scenes.state.lang));
-  
+  const { message_id: waitMessage } = await ctx.reply(ctx.i18n.t('wait'));
   if (doujin) {
     await ctx.replyWithMediaGroup([
       {
@@ -21,8 +17,8 @@ const replyDoujinWithMediaGroup = async (doujin, ctx) => {
     ]);
 
     await ctx.reply(
-      dm.message(doujin, ctx.session.__scenes.state.lang),
-      dm.replyMarkup()
+      ctx.getMessages.doujinMessage(doujin, ctx),
+      ctx.getMessages.doujinMessageButtons(ctx)
     );
   
     if(ctx.update?.message?.message_id) {

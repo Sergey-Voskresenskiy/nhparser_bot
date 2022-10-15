@@ -1,10 +1,7 @@
 
 import { removeActionMessage } from "../helpers/common";
-import { TranslateMessage } from "../helpers/TranslateMessage";
 
 import { SUBSTRING_COUNT } from "../const";
-
-const tm = new TranslateMessage();
 
 const changeLang = async ctx => {
   if(ctx.update?.message?.message_id) {
@@ -14,21 +11,17 @@ const changeLang = async ctx => {
   if(ctx.update?.callback_query?.message?.message_id) {
     await ctx.deleteMessage(ctx.update.callback_query.message.message_id)
   }
-
-  await ctx.reply(tm.message("setLang"), tm.replyMarkup())
+  await ctx.reply(ctx.i18n.t("setLang"), ctx.getMessages.switchLangButtons())
 }
 
 const setLang = async ctx => {
   const {
     match: { input },
   } = ctx;
-  ctx.session.__scenes.state.lang = input.substring(SUBSTRING_COUNT.setLang)
+  
+  ctx.i18n.locale(input.substring(SUBSTRING_COUNT.setLang))  
 
-  const { message_id } = await ctx.editMessageText(
-    tm.message("success", input.substring(SUBSTRING_COUNT.setLang)),
-    tm.replyMarkup()
-  );
-
+  const { message_id } = await ctx.editMessageText(ctx.i18n.t("success"))
   removeActionMessage(ctx, message_id);
 }
 

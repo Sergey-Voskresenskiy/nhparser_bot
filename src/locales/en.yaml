@@ -1,0 +1,27 @@
+hello: |
+  Hello @${ctx.from.username} ❤️
+
+  Just send me the 'numbers/link' to receive a doujin preview message
+donate: >
+  💰 Donate
+changeLang: >
+  🇬🇧 Change lang 
+setLang: >
+  👇 Select language
+success: >
+  🌱 Success! Language changed
+random: >
+  😵‍💫 Random
+wait: >
+  ❤️ Wait 😐
+url: >
+  🌐 Open doujin in browser
+telegra: >
+  📜 Read doujin in telegra.ph"
+webapp: >
+  🙉 Read doujin in 'WebApp' mode
+understand: |
+  🙈 🙉 🙊
+  I don't understand, send numbers or links
+doujinMessage: |
+  🆔 <code>${doujin.id}</code>\n\n📖 Title: ${doujin.title}\n\n🎨 Artist\\s: ${doujin.artists}\n\n🖖 Language\\s: ${doujin.languages}\n\n🏷️ Tags: [${doujin.tags}]

@@ -1,21 +1,19 @@
 import { NHentai } from "@shineiichijo/nhentai-ts";
 
-import { TranslateMessage } from "../helpers/TranslateMessage";
 import { replyDoujinWithMediaGroup } from "../helpers/replyDoujinWithMediaGroup";
 import { linkMatch, removeActionMessage, getTelegraphPostUrl } from "../helpers/common";
-
-const tm = new TranslateMessage();
 
 const nhentai = new NHentai() as NHentai as any;
 
 const start = async ctx => {
-  await ctx.reply(tm.message("hello", ctx.session.__scenes.state.lang), tm.replyMarkup());
+  await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
   await ctx.deleteMessage(ctx.update.message.message_id);
 }
 const help = async ctx  => {
-  await ctx.reply(tm.message("hello", ctx.session.__scenes.state.lang), tm.replyMarkup());
+  await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
   await ctx.deleteMessage(ctx.update.message.message_id);
 }
+
 const random = async ctx => {
   let telegraphPostUrl: string;
 
@@ -70,7 +68,6 @@ const numbers = async ctx => {
   }
 }
 
-
 const onMessage = async ctx => {
   const {
     message: {
@@ -82,9 +79,9 @@ const onMessage = async ctx => {
   if (linkMatch(text)) {
     return numbers(ctx)
   }
-
-  // await ctx.reply('mainScene on message');
-  // await ctx.deleteMessage(ctx.update.message.message_id);
+  await ctx.deleteMessage(ctx.update.message.message_id);
+  const { message_id } = await ctx.reply(ctx.i18n.t('understand'));
+  removeActionMessage(ctx, message_id)
 }
 
 
