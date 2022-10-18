@@ -1,7 +1,7 @@
 import { Scenes } from "telegraf";
 import { start, help, random, numbers, onMessage } from "../controllers/command"
 import { changeLang, setLang } from "../controllers/action"
-import { MainSceneState } from "src/helpers/types";
+import { MainSceneState } from "../helpers/types";
 
 const mainScene = new Scenes.BaseScene<Scenes.SceneContext<MainSceneState>>('mainScene')
 

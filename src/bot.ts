@@ -5,7 +5,7 @@ import TelegrafI18n from "telegraf-i18n"
 import { mainScene } from "./scenes/mainScene"
 import { Messages } from "./helpers/Messages";
 
-import { MainSceneState } from 'src/helpers/types';
+import { MainSceneState } from './helpers/types';
 
 const i18n = new TelegrafI18n({
   defaultLanguage: 'ua',
