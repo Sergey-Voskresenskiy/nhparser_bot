@@ -22,4 +22,4 @@ mainScene.on("message", onMessage);
 
 
 
-export { mainScene, MainSceneState }
+export { mainScene }

@@ -7,11 +7,9 @@ const nhentai = new NHentai() as NHentai as any;
 
 const start = async ctx => {
   await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
-  await ctx.deleteMessage(ctx.update.message.message_id);
 }
 const help = async ctx  => {
   await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
-  await ctx.deleteMessage(ctx.update.message.message_id);
 }
 
 const random = async ctx => {
@@ -55,33 +53,23 @@ const numbers = async ctx => {
     await replyDoujinWithMediaGroup(doujin, ctx)
 
   } catch (error) {
-    if(ctx.update?.message?.message_id) {
-      await ctx.deleteMessage(ctx.update?.message?.message_id);
-    }
-    
-    if(ctx.update?.callback_query?.message?.message_id) {
-      await ctx.deleteMessage(ctx.update.callback_query.message.message_id)
-    }
-
     const { message_id } = await ctx.reply(error.message)
     removeActionMessage(ctx, message_id)
   }
 }
 
-const onMessage = async ctx => {
+const onMessage = async (ctx) => {
   const {
     message: {
       text,
     },
   } = ctx;
 
-
   if (linkMatch(text)) {
     return numbers(ctx)
   }
-  await ctx.deleteMessage(ctx.update.message.message_id);
-  const { message_id } = await ctx.reply(ctx.i18n.t('understand'));
-  removeActionMessage(ctx, message_id)
+
+  await ctx.reply(ctx.i18n.t('understand'));
 }
 
 

@@ -20,14 +20,6 @@ const replyDoujinWithMediaGroup = async (doujin, ctx) => {
       ctx.getMessages.doujinMessage(doujin, ctx),
       ctx.getMessages.doujinMessageButtons(ctx)
     );
-  
-    if(ctx.update?.message?.message_id) {
-      await ctx.deleteMessage(ctx.update?.message?.message_id);
-    }
-
-    if(ctx.update?.callback_query?.message?.message_id) {
-      await ctx.deleteMessage(ctx.update.callback_query.message.message_id)
-    }
 
     await ctx.deleteMessage(waitMessage);
   }
