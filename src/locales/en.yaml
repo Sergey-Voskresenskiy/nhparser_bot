@@ -1,7 +1,7 @@
 hello: |
   Hello @${ctx.from.username} ❤️
 
-  Just send me the 'numbers/link' to receive a doujin preview message
+  Just/again send me the 'numbers/link' to receive a doujin preview message
 donate: >
   💰 Donate
 changeLang: >
