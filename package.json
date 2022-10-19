@@ -10,9 +10,7 @@
   },
   "dependencies": {
     "@shineiichijo/nhentai-ts": "^1.0.0",
-    "axios": "^0.21.1",
     "dotenv": "^9.0.2",
-    "node-html-parser": "^3.3.0",
     "telegra.ph": "^1.0.1",
     "telegraf": "^4.10.0",
     "telegraf-i18n": "^6.6.0"
