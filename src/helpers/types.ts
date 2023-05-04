@@ -14,3 +14,7 @@ export interface MainSceneState extends Scenes.SceneSessionData {
   }
   getMessages: Messages;
 }
+
+export interface Doujin extends IDoujinInfo {
+  telegraphPostUrl: string
+}
