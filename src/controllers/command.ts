@@ -3,7 +3,7 @@ import { NHentai } from "@shineiichijo/nhentai-ts";
 import { replyDoujinWithMediaGroup } from "../helpers/replyDoujinWithMediaGroup";
 import { linkMatch, removeActionMessage, getTelegraphPostUrl } from "../helpers/common";
 
-const nhentai = new NHentai() as NHentai as any;
+const nhentai = new NHentai({ site: "nhentai.xxx" }) as NHentai as any;
 
 const start = async ctx => {
   await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
@@ -17,7 +17,6 @@ const random = async ctx => {
 
   try {
     const doujin = await nhentai.getRandom();
-
     telegraphPostUrl =  await getTelegraphPostUrl(doujin)
     doujin.telegraphPostUrl = telegraphPostUrl
 
@@ -27,6 +26,7 @@ const random = async ctx => {
 
     await replyDoujinWithMediaGroup(doujin, ctx)
   } catch (error) {
+    console.log('random', error)
     const { message_id } = await ctx.reply(error.message)
     removeActionMessage(ctx, message_id)
   }
@@ -53,6 +53,7 @@ const numbers = async ctx => {
     await replyDoujinWithMediaGroup(doujin, ctx)
 
   } catch (error) {
+    console.log('numbers', error)
     const { message_id } = await ctx.reply(error.message)
     removeActionMessage(ctx, message_id)
   }
