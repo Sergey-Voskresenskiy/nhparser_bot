@@ -2,7 +2,7 @@ import Telegraph from 'telegra.ph'
 import { DoujinFull } from './types'
 const telegraph = new Telegraph(process.env.ACCESS_TOKEN)
 
-const telegraphPost = async (doujin: DoujinFull) => {
+const telegraphPost = async (doujin: DoujinFull): Promise<string> => {
   const content = [
     {
       tag: "a",

@@ -2,7 +2,7 @@ import { InputMediaPhoto } from "telegraf/typings/core/types/typegram";
 
 import { replyPhotoCounts } from "./common";
 
-const replyDoujinWithMediaGroup = async (doujin, ctx) => {
+const replyDoujinWithMediaGroup = async (doujin, ctx): Promise<void> => {
   const { message_id: waitMessage } = await ctx.reply(ctx.i18n.t('wait'));
   if (doujin) {
     await ctx.replyWithMediaGroup([

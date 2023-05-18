@@ -30,7 +30,7 @@ export class Messages {
           ctx.i18n.t('changeLang'),
           `changeLang`
         ),
-        Markup.button.webApp(
+        Markup.button.url(
           ctx.i18n.t('donate'),
           process.env.DONATE_URL
         )
@@ -52,19 +52,19 @@ export class Messages {
   doujinMessageButtons(ctx) {
     const buttons = [
       [
-        Markup.button.webApp(
+        Markup.button.url(
           ctx.i18n.t('url'),
           this.doujin.url
         ),
       ],
       [
-        Markup.button.webApp(
+        Markup.button.url(
           ctx.i18n.t('telegra'),
           this.doujin.telegraphPostUrl
         )
       ],
       [
-        Markup.button.webApp(
+        Markup.button.url(
           ctx.i18n.t('donate'),
           process.env.DONATE_URL
         )

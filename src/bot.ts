@@ -7,7 +7,7 @@ import { Messages } from "./helpers/Messages";
 
 import { MainSceneState } from './helpers/types';
 
-const i18n = new TelegrafI18n({
+const i18n: TelegrafI18n = new TelegrafI18n({
   defaultLanguage: 'ua',
   allowMissing: false,
   useSession: true,
@@ -19,18 +19,18 @@ const bot = new Telegraf<Scenes.SceneContext<MainSceneState>>(process.env.TOKEN)
 // @ts-ignore
 bot.context.getMessages = new Messages()
 
-const stage = new Scenes.Stage([mainScene])
+const stage: Scenes.Stage<Scenes.SceneContext<MainSceneState>, Scenes.SceneSessionData> = new Scenes.Stage([mainScene])
 
-const setupBot = () => {
+const setupBot = (): Telegraf<Scenes.SceneContext<MainSceneState>> => {
   bot.use(session())
   bot.use(i18n.middleware())
   bot.use(stage.middleware())
 
-  bot.start(ctx => {
+  bot.start((ctx): void => {
     ctx.scene.enter('mainScene');
   });
 
-  bot.on("message", async (ctx) => {
+  bot.on("message", async (ctx): Promise<void> => {
     ctx.scene.enter('mainScene');
   })
 

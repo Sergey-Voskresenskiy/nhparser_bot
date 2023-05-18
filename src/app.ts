@@ -5,7 +5,7 @@ dotenv.config({ path: path.join("./", ".env") });
 
 const { setupBot } = require('./bot');
 
-(async function () {
+(async function (): Promise<void> {
   try {
     await setupBot().launch();
 

@@ -1,13 +1,10 @@
-
-import { removeActionMessage } from "../helpers/common";
-
 import { SUBSTRING_COUNT } from "../const";
 
 const changeLang = async ctx => {
   await ctx.reply(ctx.i18n.t("setLang"), ctx.getMessages.switchLangButtons())
 }
 
-const setLang = async ctx => {
+const setLang = async (ctx): Promise<void> => {
   const {
     match: { input },
   } = ctx;

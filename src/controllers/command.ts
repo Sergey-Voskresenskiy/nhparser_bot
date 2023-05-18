@@ -6,23 +6,35 @@ import { linkMatch, removeActionMessage, getTelegraphPostUrl } from "../helpers/
 
 const nhentai = new NHentai({ site: "nhentai.website" }) as NHentai as any;
 
-const start = async ctx => {
+const start = async (ctx): Promise<void> => {
   await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
 }
-const help = async ctx  => {
+const help = async (ctx): Promise<void> => {
   await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
 }
 
-const getAndCheckDoujin = async (): Promise<Doujin> => {
-  let doujin: Doujin  = await nhentai.getRandom();
+const getAndCheckDoujin = async (count: number = 1): Promise<Doujin> => {
+  let _count: number = 1;
 
-  if(doujin.id === '') {
-    return getAndCheckDoujin()
-  }
-  return doujin
+  try {
+    let doujin: Doujin  = await nhentai.getRandom();
+
+    if(doujin.id === '') {
+      if(count <= 5) {
+        _count = count + 1;
+
+        return getAndCheckDoujin(_count)
+      }
+    }
+
+    return doujin
+  } catch(error) {
+      console.log('getAndCheckDoujin', error)
+      return error
+    }
 }
 
-const random = async ctx => {
+const random = async (ctx): Promise<void> => {
   let telegraphPostUrl: string;
 
   try {
@@ -36,6 +48,7 @@ const random = async ctx => {
     ctx.session.__scenes.state.doujin.telegraphPostUrl = telegraphPostUrl
 
     await replyDoujinWithMediaGroup(doujin, ctx)
+
   } catch (error) {
     console.log('random', error)
     const { message_id } = await ctx.reply(error.message)
@@ -43,7 +56,7 @@ const random = async ctx => {
   }
 }
 
-const numbers = async ctx => {
+const numbers = async (ctx): Promise<void> => {
   const userInput = ctx?.match?.input || linkMatch(ctx?.message?.text)[1]
   let doujin;
   let telegraphPostUrl: string;
@@ -70,7 +83,7 @@ const numbers = async ctx => {
   }
 }
 
-const onMessage = async (ctx) => {
+const onMessage = async (ctx): Promise<void> => {
   const {
     message: {
       text,
