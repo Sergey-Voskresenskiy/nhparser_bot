@@ -1,4 +1,4 @@
-import { Doujin } from './../helpers/types';
+import { Doujin, Prettify } from './../helpers/types';
 import { NHentai } from "@shineiichijo/nhentai-ts";
 
 import { replyDoujinWithMediaGroup } from "../helpers/replyDoujinWithMediaGroup";
@@ -13,11 +13,11 @@ const help = async (ctx): Promise<void> => {
   await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
 }
 
-const getAndCheckDoujin = async (count: number = 1): Promise<Doujin> => {
+const getAndCheckDoujin = async (count: number = 1): Promise<Prettify<Doujin>> => {
   let _count: number = 1;
 
   try {
-    let doujin: Doujin  = await nhentai.getRandom();
+    let doujin: Prettify<Doujin>  = await nhentai.getRandom();
 
     if(doujin.id === '') {
       if(count <= 5) {
@@ -38,7 +38,7 @@ const random = async (ctx): Promise<void> => {
   let telegraphPostUrl: string;
 
   try {
-    const doujin = await getAndCheckDoujin();
+    const doujin: Prettify<Doujin> = await getAndCheckDoujin();
 
     telegraphPostUrl =  await getTelegraphPostUrl(doujin)
     doujin.telegraphPostUrl = telegraphPostUrl

@@ -2,8 +2,20 @@ import { IDoujinInfo } from "@shineiichijo/nhentai-ts/dist/Types";
 import { Scenes } from "telegraf";
 import { Messages } from "./Messages";
 
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+export interface Bot extends Scenes.SceneContext<MainSceneState> {
+  getMessages: Messages;
+}
+
 export interface DoujinFull extends IDoujinInfo {
   telegraphPostUrl: string;
+}
+
+export interface Doujin extends IDoujinInfo {
+  telegraphPostUrl: string
 }
 
 export interface MainSceneState extends Scenes.SceneSessionData {
@@ -13,8 +25,4 @@ export interface MainSceneState extends Scenes.SceneSessionData {
     doujin: DoujinFull;
   }
   getMessages: Messages;
-}
-
-export interface Doujin extends IDoujinInfo {
-  telegraphPostUrl: string
 }

@@ -5,7 +5,7 @@ import TelegrafI18n from "telegraf-i18n"
 import { mainScene } from "./scenes/mainScene"
 import { Messages } from "./helpers/Messages";
 
-import { MainSceneState } from './helpers/types';
+import { Bot, MainSceneState, Prettify } from './helpers/types';
 
 const i18n: TelegrafI18n = new TelegrafI18n({
   defaultLanguage: 'ua',
@@ -15,11 +15,11 @@ const i18n: TelegrafI18n = new TelegrafI18n({
   directory: path.resolve(__dirname, 'locales')
 })
 
-const bot = new Telegraf<Scenes.SceneContext<MainSceneState>>(process.env.TOKEN);
-// @ts-ignore
+const bot = new Telegraf<Prettify<Bot>>(process.env.TOKEN);
+
 bot.context.getMessages = new Messages()
 
-const stage: Scenes.Stage<Scenes.SceneContext<MainSceneState>, Scenes.SceneSessionData> = new Scenes.Stage([mainScene])
+const stage: Scenes.Stage<Prettify<Scenes.SceneContext<MainSceneState>>, Prettify<Scenes.SceneSessionData>> = new Scenes.Stage([mainScene])
 
 const setupBot = (): Telegraf<Scenes.SceneContext<MainSceneState>> => {
   bot.use(session())
