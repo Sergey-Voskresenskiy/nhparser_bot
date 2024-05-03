@@ -1,11 +1,10 @@
 hello: |
   Hello @${ctx.from.username} ❤️
-
   Just/again send me the 'numbers/link' to receive a doujin preview message
 donate: >
   💰 Donate
 changeLang: >
-  🇬🇧 Change lang 
+  🇬🇧 Change lang
 setLang: >
   👇 Select language
 success: >

@@ -4,7 +4,22 @@ import { NHentai } from "@shineiichijo/nhentai-ts";
 import { replyDoujinWithMediaGroup } from "../helpers/replyDoujinWithMediaGroup";
 import { linkMatch, removeActionMessage, getTelegraphPostUrl } from "../helpers/common";
 
-const nhentai = new NHentai({ site: "nhentai.website" }) as NHentai as any;
+type NHOptions = {
+  site: "nhentai.net" | "nhentai.to" | "https://nhentai.net" | "https://nhentai.to";
+  user_agent?: string;
+  cookie_value?: string;
+}
+
+// TODO: Get User Agent and Cookies
+const user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
+const cookie_value = 'cf_clearance=IS25JW9rCO6u90ntIlFNLwt9x0viKkWvlP_PYcr.hlg-1714719797-1.0.1.1-vxDBjcnWCWH5Dg_0eVDBr.w2IrjATyYmBp4aEWdamlVS_OfSPWHA7Vv59jZP9e5.z1HlttjhBcwrobz7vDwhrA'
+
+const nhentai = new NHentai({
+  site: 'nhentai.net',
+  user_agent,
+  cookie_value
+} as NHOptions ) as NHentai as any;
+
 
 const start = async (ctx): Promise<void> => {
   await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
