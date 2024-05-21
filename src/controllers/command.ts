@@ -1,8 +1,10 @@
+import path from 'path'
 import { Doujin, Prettify } from './../helpers/types';
 import { NHentai } from "@shineiichijo/nhentai-ts";
 
 import { replyDoujinWithMediaGroup } from "../helpers/replyDoujinWithMediaGroup";
 import { linkMatch, removeActionMessage, getTelegraphPostUrl } from "../helpers/common";
+
 
 type NHOptions = {
   site: "nhentai.net" | "nhentai.to" | "https://nhentai.net" | "https://nhentai.to";
@@ -14,12 +16,13 @@ type NHOptions = {
 const user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
 const cookie_value = 'cf_clearance=IS25JW9rCO6u90ntIlFNLwt9x0viKkWvlP_PYcr.hlg-1714719797-1.0.1.1-vxDBjcnWCWH5Dg_0eVDBr.w2IrjATyYmBp4aEWdamlVS_OfSPWHA7Vv59jZP9e5.z1HlttjhBcwrobz7vDwhrA'
 
+const image = path.join(__dirname, '../stickers/sticker.webm')
+
 const nhentai = new NHentai({
   site: 'nhentai.net',
   user_agent,
   cookie_value
-} as NHOptions ) as NHentai as any;
-
+} as NHOptions) as NHentai as any;
 
 const start = async (ctx): Promise<void> => {
   await ctx.reply(ctx.i18n.t('hello', { ctx }), ctx.getMessages.helloButtons(ctx))
@@ -32,10 +35,10 @@ const getAndCheckDoujin = async (count: number = 1): Promise<Prettify<Doujin>> =
   let _count: number = 1;
 
   try {
-    let doujin: Prettify<Doujin>  = await nhentai.getRandom();
+    let doujin: Prettify<Doujin> = await nhentai.getRandom();
 
-    if(doujin.id === '') {
-      if(count <= 5) {
+    if (doujin.id === '') {
+      if (count <= 5) {
         _count = count + 1;
 
         return getAndCheckDoujin(_count)
@@ -43,10 +46,10 @@ const getAndCheckDoujin = async (count: number = 1): Promise<Prettify<Doujin>> =
     }
 
     return doujin
-  } catch(error) {
-      console.log('getAndCheckDoujin', error)
-      return error
-    }
+  } catch (error) {
+    console.log('getAndCheckDoujin', error)
+    return error
+  }
 }
 
 const random = async (ctx): Promise<void> => {
@@ -55,7 +58,7 @@ const random = async (ctx): Promise<void> => {
   try {
     const doujin: Prettify<Doujin> = await getAndCheckDoujin();
 
-    telegraphPostUrl =  await getTelegraphPostUrl(doujin)
+    telegraphPostUrl = await getTelegraphPostUrl(doujin)
     doujin.telegraphPostUrl = telegraphPostUrl
 
     ctx.session.__scenes.state.lastDoujinId = doujin.id
@@ -77,11 +80,11 @@ const numbers = async (ctx): Promise<void> => {
   let telegraphPostUrl: string;
 
   try {
-    if(ctx.session.__scenes.state.lastDoujinId === userInput) {
+    if (ctx.session.__scenes.state.lastDoujinId === userInput) {
       doujin = ctx.session.__scenes.state.doujin
     } else {
       doujin = await nhentai.getDoujin(userInput);
-      telegraphPostUrl =  await getTelegraphPostUrl(doujin)
+      telegraphPostUrl = await getTelegraphPostUrl(doujin)
       doujin.telegraphPostUrl = telegraphPostUrl
 
       ctx.session.__scenes.state.lastDoujinId = doujin.id
@@ -110,7 +113,13 @@ const onMessage = async (ctx): Promise<void> => {
   }
 
   await ctx.reply(ctx.i18n.t('understand'));
+  await ctx.replyWithSticker({
+    source: image,
+    filename: 'sticker.webm'
+  }, {
+    reply_to_message_id: ctx.message.message_id,
+    allow_sending_without_reply: true,
+  });
 }
-
 
 export { start, help, random, numbers, onMessage }
